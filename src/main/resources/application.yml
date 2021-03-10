@@ -1,0 +1,29 @@
+#服务端口
+server:
+  port: 8001
+#服务名称
+spring:
+  application:
+    name: eduonline
+  #服务启动环境
+  profiles:
+    active: dev
+  #mysql数据库连接配置信息
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/onlineedu?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: 1484840359
+#MyBatisPlus配置
+mybatis-plus:
+  global-config:
+    db-config:
+      #设定自动生成主键的类型
+      id-type: assign_id
+    #  configuration:
+    #输出mp的日志
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#json数据返回的时间格式要求
+jackson:
+  date-format: yyyy-MM-dd HH:mm:ss
+  time-zone: GMT+8
