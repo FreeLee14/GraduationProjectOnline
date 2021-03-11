@@ -1,6 +1,6 @@
 package cn.com.tjise.onlineedu.service.impl;
 
-import cn.com.tjise.onlineedu.entity.User;
+import cn.com.tjise.onlineedu.entity.po.User;
 import cn.com.tjise.onlineedu.mapper.UserMapper;
 import cn.com.tjise.onlineedu.service.UserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

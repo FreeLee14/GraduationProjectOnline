@@ -1,6 +1,6 @@
 package cn.com.tjise.onlineedu.service.impl;
 
-import cn.com.tjise.onlineedu.entity.StudentClassRelation;
+import cn.com.tjise.onlineedu.entity.po.StudentClassRelation;
 import cn.com.tjise.onlineedu.mapper.StudentClassRelationMapper;
 import cn.com.tjise.onlineedu.service.StudentClassRelationService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

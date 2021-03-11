@@ -1,4 +1,4 @@
-package cn.com.tjise.onlineedu.entity;
+package cn.com.tjise.onlineedu.entity.po;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -18,8 +18,8 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="Role对象", description="")
-public class Role implements Serializable {
+@ApiModel(value="StudentClassRelation对象", description="")
+public class StudentClassRelation implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -27,11 +27,11 @@ public class Role implements Serializable {
       @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @ApiModelProperty(value = "权限id")
-    private Integer roleId;
+    @ApiModelProperty(value = "课程id")
+    private String classId;
 
-    @ApiModelProperty(value = "权限类型（为中文例如：管理员、学生、教师）")
-    private String type;
+    @ApiModelProperty(value = "学生id")
+    private String studentId;
 
 
 }

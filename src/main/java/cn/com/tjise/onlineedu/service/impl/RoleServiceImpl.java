@@ -1,6 +1,6 @@
 package cn.com.tjise.onlineedu.service.impl;
 
-import cn.com.tjise.onlineedu.entity.Role;
+import cn.com.tjise.onlineedu.entity.po.Role;
 import cn.com.tjise.onlineedu.mapper.RoleMapper;
 import cn.com.tjise.onlineedu.service.RoleService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

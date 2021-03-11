@@ -1,6 +1,6 @@
 package cn.com.tjise.onlineedu.mapper;
 
-import cn.com.tjise.onlineedu.entity.UTeacher;
+import cn.com.tjise.onlineedu.entity.po.UTeacher;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

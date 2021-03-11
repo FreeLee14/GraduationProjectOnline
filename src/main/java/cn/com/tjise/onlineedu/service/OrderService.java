@@ -1,6 +1,6 @@
 package cn.com.tjise.onlineedu.service;
 
-import cn.com.tjise.onlineedu.entity.Order;
+import cn.com.tjise.onlineedu.entity.po.Order;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

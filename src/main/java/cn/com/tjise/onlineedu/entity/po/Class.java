@@ -1,4 +1,4 @@
-package cn.com.tjise.onlineedu.entity;
+package cn.com.tjise.onlineedu.entity.po;
 
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
