@@ -1,12 +1,16 @@
 package cn.com.tjise.onlineedu.entity.po;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import java.io.Serializable;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -29,6 +33,9 @@ public class UTeacher implements Serializable {
 
     @ApiModelProperty(value = "教师id")
     private String teacherId;
+    
+    @ApiModelProperty(value = "权限id")
+    private String roleId;
 
     @ApiModelProperty(value = "教师姓名")
     private String name;
@@ -50,6 +57,14 @@ public class UTeacher implements Serializable {
 
     @ApiModelProperty(value = "头像")
     private String avatar;
+    
+    @ApiModelProperty(value = "创建时间")
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+    
+    @ApiModelProperty(value = "更新时间")
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
 
 
 }

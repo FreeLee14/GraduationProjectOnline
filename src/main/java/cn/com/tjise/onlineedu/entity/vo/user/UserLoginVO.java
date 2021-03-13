@@ -1,4 +1,4 @@
-package cn.com.tjise.onlineedu.entity.vo;
+package cn.com.tjise.onlineedu.entity.vo.user;
 
 import cn.com.tjise.onlineedu.constant.RoleEnum;
 import io.swagger.annotations.ApiModel;

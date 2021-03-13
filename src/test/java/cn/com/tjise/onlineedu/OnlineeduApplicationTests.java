@@ -18,5 +18,7 @@ class OnlineeduApplicationTests
     {
         String token = TokenUtil.buildToken("3422123");
         System.out.println(token);
+        boolean b = TokenUtil.validToken(token);
+        System.out.println(b);
     }
 }

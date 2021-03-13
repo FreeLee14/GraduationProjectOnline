@@ -2,11 +2,14 @@ package cn.com.tjise.onlineedu.util;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @author admin
@@ -42,7 +45,7 @@ public class TokenUtil
                 .subject("doi")
                 .issuer("http://www.doiduoyi.com")
                 .expirationTime(new Date(System.currentTimeMillis() + EXPIRE_TIME))
-                .claim("ACCOUNT",userId)
+                .claim("ACCOUNT", userId)
                 .build();
             /**
              * 3. 建立签名
@@ -62,4 +65,44 @@ public class TokenUtil
         return null;
     }
     
+    /**
+     * 验证token
+     *
+     * @param token
+     * @return
+     */
+    public static boolean validToken(String token)
+    {
+        try
+        {
+            SignedJWT jwt = SignedJWT.parse(token);
+            JWSVerifier verifier = new MACVerifier(SECRET);
+            //校验是否有效
+            if (!jwt.verify(verifier))
+            {
+                return false;
+            }
+            
+            //校验超时
+            Date expirationTime = jwt.getJWTClaimsSet().getExpirationTime();
+            if (new Date().after(expirationTime))
+            {
+                return false;
+            }
+            
+            //获取载体中的数据
+            Object account = jwt.getJWTClaimsSet().getClaim("ACCOUNT");
+            //是否有openUid
+            if (Objects.isNull(account))
+            {
+                return false;
+            }
+            return true;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
