@@ -6,11 +6,11 @@ import cn.com.tjise.onlineedu.entity.po.UTeacher;
 import cn.com.tjise.onlineedu.entity.po.User;
 import cn.com.tjise.onlineedu.service.UTeacherService;
 import cn.com.tjise.onlineedu.service.UserService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,11 +32,10 @@ import java.util.Map;
  * @since 2021-03-11
  */
 @RestController
+@Slf4j
 @RequestMapping("/onlineedu/teacher")
 public class TeacherController
 {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(TeacherController.class.getName());
     @Autowired
     private UTeacherService service;
     @Autowired
@@ -66,18 +65,18 @@ public class TeacherController
             boolean flag = userService.save(user);
             if (flag)
             {
-                LOGGER.info("success to save the info that it's include teacher and user!!");
+                log.info("success to save the info that it's include teacher and user!!");
                 return R.ok();
             }
             else
             {
-                LOGGER.info("failed to save the info of user!!");
+                log.info("failed to save the info of user!!");
                 return R.error();
             }
         }
         else
         {
-            LOGGER.info("failed to save the info of teacher!!");
+            log.info("failed to save the info of teacher!!");
             return R.error();
         }
     }
@@ -95,12 +94,15 @@ public class TeacherController
         // 当权限为1时代表管理员，有权限删除教师
         if (user.getRoleId() == 1)
         {
-            UpdateWrapper<UTeacher> wrapper = new UpdateWrapper<>();
+            QueryWrapper<UTeacher> wrapper = new QueryWrapper<>();
             wrapper.eq("teacher_id", deleteId);
             // 权限通过，根据deleteId删除对应的用户
             boolean remove = service.remove(wrapper);
-            if (remove)
+            // 同时删除user表中的权限关联
+            boolean flag = userService.deleteById(deleteId);
+            if (remove && flag)
             {
+                log.info("success to delete teacher who teacherId is" + deleteId );
                 return R.ok().message("删除成功");
             }
             else

@@ -35,9 +35,6 @@ public class UStudent implements Serializable
     @ApiModelProperty(value = "学生id")
     private String studentId;
     
-    @ApiModelProperty(value = "权限id")
-    private String roleId;
-    
     @ApiModelProperty(value = "学生姓名")
     private String name;
     

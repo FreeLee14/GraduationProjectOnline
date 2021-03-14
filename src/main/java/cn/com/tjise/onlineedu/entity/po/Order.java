@@ -48,7 +48,7 @@ public class Order implements Serializable {
     @TableField("updateTime")
     private Date updatetime;
 
-    @ApiModelProperty(value = "订单状态")
+    @ApiModelProperty(value = "订单状态(0 未支付; 1 已支付; 2 废弃订单)")
     private Integer status;
     
     @ApiModelProperty(value = "逻辑删除 1（true）1已删除，0（false）未删除")

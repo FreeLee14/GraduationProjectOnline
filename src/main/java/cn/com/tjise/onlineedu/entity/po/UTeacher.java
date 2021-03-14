@@ -33,9 +33,6 @@ public class UTeacher implements Serializable {
 
     @ApiModelProperty(value = "教师id")
     private String teacherId;
-    
-    @ApiModelProperty(value = "权限id")
-    private String roleId;
 
     @ApiModelProperty(value = "教师姓名")
     private String name;

@@ -2,15 +2,20 @@ package cn.com.tjise.onlineedu.mapper;
 
 import cn.com.tjise.onlineedu.entity.po.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
+import org.springframework.stereotype.Repository;
 
 /**
  * <p>
- *  Mapper 接口
+ * Mapper 接口
  * </p>
  *
  * @author admin
  * @since 2021-03-11
  */
-public interface UserMapper extends BaseMapper<User> {
+@Mapper
+@Repository
+public interface UserMapper extends BaseMapper<User>
+{
 
 }

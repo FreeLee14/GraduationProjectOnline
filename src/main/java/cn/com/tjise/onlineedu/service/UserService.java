@@ -20,4 +20,11 @@ public interface UserService extends IService<User>
      * @return
      */
     User queryById(String id);
+    
+    /**
+     * 根据账户号删除用户权限映射
+     * @param id
+     * @return
+     */
+    boolean deleteById(String id);
 }

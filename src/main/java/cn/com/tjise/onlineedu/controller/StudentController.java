@@ -98,7 +98,9 @@ public class StudentController
             wrapper.eq("student_id", deleteId);
             // 权限通过，根据deleteId删除对应的用户
             boolean remove = service.remove(wrapper);
-            if (remove)
+            // 同时删除user表中的权限关联
+            boolean flag = userService.deleteById(deleteId);
+            if (remove && flag)
             {
                 return R.ok().message("删除成功");
             }
