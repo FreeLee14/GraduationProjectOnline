@@ -26,6 +26,8 @@ public class TokenUtil
      * 过期时间2小时
      */
     private static final long EXPIRE_TIME = 7_200_000;
+    // 测试时间
+//    private static final long EXPIRE_TIME = 10_000; 
     
     /**
      * 生成token

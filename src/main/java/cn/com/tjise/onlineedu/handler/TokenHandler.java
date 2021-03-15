@@ -33,6 +33,7 @@ public class TokenHandler implements HandlerInterceptor
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception
     {
+        // 从请求头中获取token值
         String token = request.getHeader("token");
         // 验证token
         if (!TokenUtil.validToken(token))

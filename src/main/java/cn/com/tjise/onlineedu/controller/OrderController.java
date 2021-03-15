@@ -2,20 +2,31 @@ package cn.com.tjise.onlineedu.controller;
 
 
 import cn.com.tjise.onlineedu.constant.OrderEnum;
+import cn.com.tjise.onlineedu.constant.RoleEnum;
 import cn.com.tjise.onlineedu.entity.dto.R;
 import cn.com.tjise.onlineedu.entity.po.Order;
+import cn.com.tjise.onlineedu.entity.po.User;
 import cn.com.tjise.onlineedu.service.OrderService;
+import cn.com.tjise.onlineedu.service.UserService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -33,6 +44,8 @@ public class OrderController
     
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private UserService userService;
     
     @PostMapping("save")
     @ApiOperation(value = "保存订单", notes = "此时订单处于未支付状态")
@@ -57,7 +70,7 @@ public class OrderController
         }
     }
     
-    @ApiOperation(value = "修改订单状态")
+    @ApiOperation(value = "修改订单状态", notes = "可修改订单状态为完成支付，废弃订单")
     @PutMapping("update/{orderId}/{status}")
     public R updateOrder(
         @ApiParam(name = "orderId", value = "订单id", required = true)
@@ -97,8 +110,59 @@ public class OrderController
         return R.error();
     }
     
-    // 删除订单
+    @ApiOperation(value = "删除订单")
+    @DeleteMapping("delete/{orderId}")
+    public R deleteByOrderId(@PathVariable String orderId)
+    {
+        QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("order_id", orderId);
+        
+        boolean remove = orderService.remove(queryWrapper);
+        if (remove)
+        {
+            return R.ok().message("订单删除成功！！");
+        }
+        else
+        {
+            return R.error().message("订单删除失败！！");
+        }
+    }
     
-    // 查询订单
+    @GetMapping("pageSearch/{nowId}/{currentPage}/{limit}")
+    @ApiOperation(value = "依据当前的学生id进行分页查询")
+    public R pageSearch(
+        @ApiParam(name = "nowId", value = "当前学生id", required = true)
+        @PathVariable String nowId,
+        @ApiParam(name = "currentPage", value = "当前页码", required = true)
+        @PathVariable Integer currentPage,
+        @ApiParam(name = "limit", value = "当前页数记录数", required = true)
+        @PathVariable Integer limit
+    )
+    {
+        /*
+            判断当前id是否为学生，后端进行权限校验
+         */
+        User user = userService.queryById(nowId);
+        if (RoleEnum.STUDENT.ordinal() + 1 == user.getRoleId())
+        {
+            Page<Order> page = new Page<>(currentPage, limit);
+            orderService.page(page);
+            // 获取总记录数
+            long total = page.getTotal();
+            // 获取所有记录
+            List<Order> records = page.getRecords();
+    
+            Map<String, Object> data = new HashMap<>();
+            data.put("total", total);
+            data.put("rows", records);
+            
+            return R.ok().data(data);
+        }
+        else
+        {
+            return R.error().message("当前用户没有权限查询订单");
+        }
+        
+    }
 }
 
