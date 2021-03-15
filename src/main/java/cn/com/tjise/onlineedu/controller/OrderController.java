@@ -4,8 +4,10 @@ package cn.com.tjise.onlineedu.controller;
 import cn.com.tjise.onlineedu.constant.OrderEnum;
 import cn.com.tjise.onlineedu.constant.RoleEnum;
 import cn.com.tjise.onlineedu.entity.dto.R;
+import cn.com.tjise.onlineedu.entity.po.Class;
 import cn.com.tjise.onlineedu.entity.po.Order;
 import cn.com.tjise.onlineedu.entity.po.User;
+import cn.com.tjise.onlineedu.service.ClassService;
 import cn.com.tjise.onlineedu.service.OrderService;
 import cn.com.tjise.onlineedu.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -46,13 +48,23 @@ public class OrderController
     private OrderService orderService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private ClassService classService;
     
     @PostMapping("save")
     @ApiOperation(value = "保存订单", notes = "此时订单处于未支付状态")
     public R saveOrder(@RequestBody Order order)
     {
         boolean flag = false;
-        
+        /*
+            保存订单之前先进行当前课程的状态查询
+         */
+        int quota = classService.queryQuotaOfPeople(order.getClassId());
+        if (quota <= 0)
+        {
+            return R.error().message("当前课程已没有剩余名额");
+        }
+    
         if (order != null)
         {
             flag = orderService.save(order);
@@ -71,38 +83,40 @@ public class OrderController
     }
     
     @ApiOperation(value = "修改订单状态", notes = "可修改订单状态为完成支付，废弃订单")
-    @PutMapping("update/{orderId}/{status}")
-    public R updateOrder(
-        @ApiParam(name = "orderId", value = "订单id", required = true)
-        @PathVariable String orderId,
-        @ApiParam(name = "status", value = "订单状态", required = true)
-        @PathVariable Integer status
-    )
+    @PutMapping("update")
+    public R updateOrder(@RequestBody Order order)
     {
         UpdateWrapper<Order> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("order_id", orderId);
+        updateWrapper.eq("order_id", order.getOrderId());
         // 使用wrapper设定更新status字段，更新时间由拦截器进行添加
-        updateWrapper.set("status", status);
+        updateWrapper.set("status", order.getStatus());
         boolean update = orderService.update(updateWrapper);
         
         if (update)
         {
-            if (OrderEnum.PAID.ordinal() == status)
+            if (OrderEnum.PAID.ordinal() == order.getStatus())
             {
+                /**
+                 * 更新课程剩余名额
+                 */
+                Class classInfo = classService.queryByClassId(order.getClassId());
+                classInfo.setQuota(classInfo.getQuota() - 1);
+                classService.updateByClassId(classInfo);
+                
                 return R.ok().message("付款成功！！");
             }
-            else if (OrderEnum.IGNORE.ordinal() == status)
+            else if (OrderEnum.IGNORE.ordinal() == order.getStatus())
             {
                 return R.ok().message("废弃订单成功！！");
             }
         }
         else
         {
-            if (OrderEnum.PAID.ordinal() == status)
+            if (OrderEnum.PAID.ordinal() == order.getStatus())
             {
                 return R.error().message("付款失败！！");
             }
-            else if (OrderEnum.IGNORE.ordinal() == status)
+            else if (OrderEnum.IGNORE.ordinal() == order.getStatus())
             {
                 return R.error().message("废弃订单失败！！");
             }

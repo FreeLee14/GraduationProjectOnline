@@ -8,6 +8,7 @@ import cn.com.tjise.onlineedu.entity.po.UStudent;
 import cn.com.tjise.onlineedu.entity.po.User;
 import cn.com.tjise.onlineedu.entity.vo.classinfo.ClassQueryVO;
 import cn.com.tjise.onlineedu.service.ClassService;
+import cn.com.tjise.onlineedu.service.UTeacherService;
 import cn.com.tjise.onlineedu.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -46,6 +47,8 @@ public class ClassController
     private ClassService classService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private UTeacherService teacherService;
     
     @ApiOperation(value = "分页查询所有课程", notes = "学生权限调用该接口")
     @GetMapping("pageSearch/{currentPage}/{limit}")
@@ -235,6 +238,7 @@ public class ClassController
      * @return
      */
     @GetMapping("queryStuByClassId/{classId}")
+    @ApiOperation(value = "基于课程id查询当前课程所包含学生 教师权限使用该接口")
     public R queryStuByClassId(
         @ApiParam(name = "classId", value = "当前课程编号", required = true)
         @PathVariable String classId)
@@ -250,14 +254,20 @@ public class ClassController
      * @return
      */
     @GetMapping("queryTeaByClassId/{classId}")
+    @ApiOperation(value = "基于课程id查询当前课程所属老师 学生权限使用该接口")
     public R queryTeaByClassId(
         @ApiParam(name = "classId", value = "当前课程编号", required = true)
         @PathVariable String classId
     )
     {
+        Class classInfo = classService.queryByClassId(classId);
+        String teacherId = classInfo.getTeacherId();
+        Map<String, Object> info = teacherService.info(teacherId);
+        return R.ok().data(info).message("");
         
-        return R.ok();
     }
+    
+    // 退课 （根据日期判断当前课程可以退）
     
 }
 

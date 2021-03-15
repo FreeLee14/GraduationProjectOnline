@@ -3,6 +3,7 @@ package cn.com.tjise.onlineedu.service;
 import cn.com.tjise.onlineedu.entity.po.Class;
 import cn.com.tjise.onlineedu.entity.po.UStudent;
 import cn.com.tjise.onlineedu.entity.vo.classinfo.ClassQueryVO;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -45,4 +46,23 @@ public interface ClassService extends IService<Class>
      * @return
      */
     List<UStudent> queryStuByClassId(String classId);
+    
+    /**
+     * 根据课程id查询课程剩余名额
+     * @param classId
+     * @return
+     */
+    int queryQuotaOfPeople(String classId);
+    
+    /**
+     * 根据classid查询独一份的课程信息
+     * @param classId
+     * @return
+     */
+    default Class queryByClassId(String classId)
+    {
+        QueryWrapper<Class> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("class_id", classId);
+        return getOne(queryWrapper);
+    }
 }

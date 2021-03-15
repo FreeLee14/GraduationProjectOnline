@@ -5,9 +5,6 @@ package cn.com.tjise.onlineedu.constant;
  */
 public class GlobalConstant
 {
-    /**
-     * 生成和验证token的密钥
-     */
     
     /**
      * 创建时间、更新时间

@@ -49,6 +49,9 @@ public class Class implements Serializable
     @ApiModelProperty(value = "课程价格")
     private BigDecimal price;
     
+    @ApiModelProperty(value = "课程剩余名额")
+    private Integer quota;
+    
     @ApiModelProperty(value = "课程状态(1：未开课；2：已开课；3：已结课)")
     private Integer status;
     

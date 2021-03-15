@@ -103,6 +103,7 @@ public class ClassServiceImpl
     
     /**
      * 根据课程id查询学生
+     *
      * @param classId 课程id
      * @return
      */
@@ -122,5 +123,22 @@ public class ClassServiceImpl
         // 将获取到的所有当前课程的学生id，在学生表中进行范围查询
         queryWrapper.in("student_id", collect);
         return studentMapper.selectList(queryWrapper);
+    }
+    
+    /**
+     * 根据课程id查询剩余名额
+     *
+     * @param classId
+     * @return
+     */
+    @Override
+    public int queryQuotaOfPeople(String classId)
+    {
+        QueryWrapper<Class> queryWrapper = new QueryWrapper<>();
+        // 只查询剩余名额字段
+        queryWrapper.select("quota");
+        queryWrapper.eq("class_id", classId);
+        Class classInfo = getOne(queryWrapper);
+        return classInfo.getQuota();
     }
 }
