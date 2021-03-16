@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +33,7 @@ import java.util.Map;
  * 管理员提供注册、查询信息、更改信息接口，不提供删除管理员接口
  */
 @RestController
+@CrossOrigin
 @RequestMapping("/onlineedu/admin")
 public class AdminController
 {

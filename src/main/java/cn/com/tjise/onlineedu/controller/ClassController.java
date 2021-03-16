@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
  * @since 2021-03-11
  */
 @RestController
+@CrossOrigin
 @Slf4j
 @RequestMapping("/onlineedu/class")
 public class ClassController
@@ -263,7 +265,7 @@ public class ClassController
         Class classInfo = classService.queryByClassId(classId);
         String teacherId = classInfo.getTeacherId();
         Map<String, Object> info = teacherService.info(teacherId);
-        return R.ok().data(info).message("");
+        return R.ok().data(info);
         
     }
     

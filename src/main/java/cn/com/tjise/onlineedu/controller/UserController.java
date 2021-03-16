@@ -7,6 +7,7 @@ import cn.com.tjise.onlineedu.service.UAdminService;
 import cn.com.tjise.onlineedu.service.UStudentService;
 import cn.com.tjise.onlineedu.service.UTeacherService;
 import cn.com.tjise.onlineedu.service.UserService;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @CrossOrigin
 @RequestMapping("/onlineedu/user")
+@Api("用户管理")
 public class UserController
 {
     @Autowired

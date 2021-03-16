@@ -10,6 +10,7 @@ import cn.com.tjise.onlineedu.service.UserService;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2021-03-11
  */
 @RestController
+@CrossOrigin
 @Slf4j
 @RequestMapping("/onlineedu/studentClassRelation")
 public class StudentClassRelationController

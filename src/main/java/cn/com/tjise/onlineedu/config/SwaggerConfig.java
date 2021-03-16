@@ -46,4 +46,5 @@ public class SwaggerConfig
             .contact(new Contact("admin", "http://onlineedu.com", "1484840359@qq.com"))
             .build();
     }
+    
 }
