@@ -40,6 +40,7 @@ public class UAdminServiceImpl
             String token = TokenUtil.buildToken(loginVO.getUserId());
             // 组装响应的用户信息
             HashMap<String, Object> data = new HashMap<>();
+            data.put("userId", admin.getAdminId());
             data.put("name", admin.getName());
             data.put("age", admin.getAge());
             data.put("email", admin.getEmail());
