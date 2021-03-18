@@ -10,6 +10,8 @@ import cn.com.tjise.onlineedu.service.UStudentService;
 import cn.com.tjise.onlineedu.service.UTeacherService;
 import cn.com.tjise.onlineedu.service.UserService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,6 +53,7 @@ public class UserController
      * @return
      */
     @PostMapping("login")
+    @ApiOperation(value = "登陆")
     public R login(@RequestBody UserLoginVO loginVO)
     {
         
@@ -79,23 +82,34 @@ public class UserController
         }
     }
     
+    /**
+     * 查询用户信息
+     * @param userId
+     * @return
+     */
     @GetMapping("info")
-    public R info(@RequestParam("userId") String userId)
+    @ApiOperation("查询用户信息")
+    public R info(
+        @ApiParam(name = "userId", value = "用户id", required = true)
+        @RequestParam("userId") String userId)
     {
         User user = userService.queryById(userId);
         Integer roleId = user.getRoleId();
         
         Map<String, Object> info = null;
+        // 管理员权限
         if (RoleEnum.ADMIN.ordinal() + 1 == roleId)
         {
             info = uAdminService.info(userId);
             info.put("roles","[" + RoleEnum.ADMIN + "]");
         }
+        // 教师权限
         else if (RoleEnum.TEACHER.ordinal() + 1 == roleId)
         {
             info = uTeacherService.info(userId);
             info.put("roles", "[" + RoleEnum.TEACHER + "]");
         }
+        // 学生权限
         else if (RoleEnum.STUDENT.ordinal() + 1 == roleId)
         {
             info = uStudentService.info(userId);

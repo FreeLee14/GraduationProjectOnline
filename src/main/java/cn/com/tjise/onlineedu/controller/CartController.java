@@ -33,7 +33,7 @@ public class CartController
     private ClassService classService;
     
     @PostMapping("save")
-    @ApiOperation(value = "保存至购物车")
+    @ApiOperation(value = "保存购物车")
     public R save(@RequestBody Cart cart)
     {
         /*
