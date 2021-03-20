@@ -2,12 +2,14 @@ package cn.com.tjise.onlineedu.service.impl;
 
 import cn.com.tjise.onlineedu.entity.dto.R;
 import cn.com.tjise.onlineedu.entity.po.UStudent;
+import cn.com.tjise.onlineedu.entity.po.User;
 import cn.com.tjise.onlineedu.entity.vo.user.UserLoginVO;
 import cn.com.tjise.onlineedu.mapper.UStudentMapper;
 import cn.com.tjise.onlineedu.service.UStudentService;
 import cn.com.tjise.onlineedu.util.TokenUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -26,6 +28,8 @@ public class UStudentServiceImpl
     extends ServiceImpl<UStudentMapper, UStudent>
     implements UStudentService
 {
+    @Autowired
+    private UserServiceImpl userService;
     
     @Override
     public R login(UserLoginVO loginVO)
@@ -50,21 +54,27 @@ public class UStudentServiceImpl
     
     /**
      * 根据id查询学生
-     * @param id
+     * @param id 学生编号
      * @return
      */
     @Override
     public Map<String, Object> info(String id)
     {
+        User user = userService.queryById(id);
+        Integer roleId = user.getRoleId();
+        
         QueryWrapper<UStudent> wrapper = new QueryWrapper<>();
         wrapper.eq("student_id", id);
         UStudent student = getOne(wrapper);
         Map<String, Object> data = new HashMap<>();
+        data.put("id", id);
+        data.put("roleId", roleId);
         data.put("name", student.getName());
         data.put("age", student.getAge());
         data.put("email", student.getEmail());
         data.put("school", student.getSchool());
         data.put("avatar", student.getAvatar());
+        data.put("password", student.getPassword());
         return data;
     }
 }

@@ -4,10 +4,12 @@ package cn.com.tjise.onlineedu.controller;
 import cn.com.tjise.onlineedu.entity.dto.R;
 import cn.com.tjise.onlineedu.entity.po.UTeacher;
 import cn.com.tjise.onlineedu.entity.po.User;
+import cn.com.tjise.onlineedu.mapper.UTeacherMapper;
 import cn.com.tjise.onlineedu.service.UTeacherService;
 import cn.com.tjise.onlineedu.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
@@ -15,13 +17,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,6 +45,8 @@ public class TeacherController
     private UTeacherService service;
     @Autowired
     private UserService userService;
+    @Autowired
+    private UTeacherMapper teacherMapper;
     
     /**
      * 注册接口
@@ -51,7 +56,7 @@ public class TeacherController
      */
     @PostMapping("save")
     @ApiOperation(value = "老师注册接口")
-    public R save(@RequestBody UTeacher teacher)
+    public R save(UTeacher teacher)
     {
         // 保存教师信息
         boolean save = service.save(teacher);
@@ -83,13 +88,13 @@ public class TeacherController
         }
     }
     
-    @DeleteMapping("delete/{nowId}/{deleteId}")
+    @DeleteMapping("delete")
     @ApiOperation(value = "删除教师接口")
     public R delete(
         @ApiParam(name = "nowId", value = "当前登录用户号", required = true)
-        @PathVariable String nowId,
+        @RequestParam("nowId") String nowId,
         @ApiParam(name = "deleteId", value = "要删除的目标用户号", required = true)
-        @PathVariable String deleteId)
+        @RequestParam("deleteId") String deleteId)
     {
         // 更具当前id查询当前用户角色
         User user = userService.queryById(nowId);
@@ -132,18 +137,42 @@ public class TeacherController
         }
         else
         {
-            return R.ok().message("更新失败！！");
+            return R.error().message("更新失败！！");
         }
     }
     
-    @GetMapping("info/{id}")
+    @GetMapping("info")
     @ApiOperation(value = "根据id查询")
     public R queryById(
-        @ApiParam(name = "nowId", value = "教师职工号", required = true)
-        @PathVariable String id)
+        @ApiParam(name = "id", value = "教师职工号", required = true)
+        @RequestParam("id") String id)
     {
         Map<String, Object> data = service.info(id);
         return R.ok().data(data);
+    }
+    
+    @GetMapping("pageSearch")
+    @ApiOperation(value = "分页查询所有教师")
+    public R pageSearch(
+        @RequestParam("currentPage") Integer currentPage,
+        @RequestParam("limit") Integer limit
+        )
+    {
+        Page<UTeacher> page = new Page<>(currentPage, limit);
+        service.page(page);
+        long total = page.getTotal();
+        List<UTeacher> records = page.getRecords();
+        return R.ok().data("total", total).data("rows", records);
+    }
+    
+    @GetMapping("queryAllTeacher")
+    public R queryAllTeacher()
+    {
+        QueryWrapper<UTeacher> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("teacher_id", "name");
+        List<UTeacher> teachers = teacherMapper.selectList(queryWrapper);
+        
+        return R.ok().data("rows", teachers);
     }
 }
 

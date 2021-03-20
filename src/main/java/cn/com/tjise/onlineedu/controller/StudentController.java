@@ -7,21 +7,20 @@ import cn.com.tjise.onlineedu.entity.po.User;
 import cn.com.tjise.onlineedu.service.UStudentService;
 import cn.com.tjise.onlineedu.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,12 +33,10 @@ import java.util.Map;
  */
 @RestController
 @CrossOrigin
+@Slf4j
 @RequestMapping("/onlineedu/student")
 public class StudentController
 {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(StudentController.class.getName());
-    
     @Autowired
     private UStudentService service;
     @Autowired
@@ -53,7 +50,7 @@ public class StudentController
      */
     @PostMapping("save")
     @ApiOperation(value = "学生注册接口")
-    public R save(@RequestBody UStudent student)
+    public R save(UStudent student)
     {
         // 保存学生信息
         boolean save = service.save(student);
@@ -67,29 +64,29 @@ public class StudentController
             boolean flag = userService.save(user);
             if (flag)
             {
-                LOGGER.info("success to save the info that it's include student and user!!");
+                log.info("success to save the info that it's include student and user!!");
                 return R.ok();
             }
             else
             {
-                LOGGER.info("failed to save the info of user!!");
+                log.info("failed to save the info of user!!");
                 return R.error();
             }
         }
         else
         {
-            LOGGER.info("failed to save the info of student!!");
+            log.info("failed to save the info of student!!");
             return R.error();
         }
     }
     
-    @DeleteMapping("delete/{nowId}/{deleteId}")
+    @DeleteMapping("delete")
     @ApiOperation(value = "删除学生接口")
     public R delete(
         @ApiParam(name = "nowId", value = "当前登录用户号", required = true)
-        @PathVariable String nowId,
+        @RequestParam("nowId") String nowId,
         @ApiParam(name = "deleteId", value = "要删除的目标用户号", required = true)
-        @PathVariable String deleteId)
+        @RequestParam("deleteId") String deleteId)
     {
         // 更具当前id查询当前用户角色
         User user = userService.queryById(nowId);
@@ -117,9 +114,9 @@ public class StudentController
         }
     }
     
-    @PutMapping("update")
+    @PostMapping("update")
     @ApiOperation(value = "更新学生信息接口")
-    public R update(@RequestBody UStudent student)
+    public R update(UStudent student)
     {
         UpdateWrapper<UStudent> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("student_id", student.getStudentId());
@@ -127,6 +124,7 @@ public class StudentController
         
         if (update)
         {
+            log.info("success to update the info of student id is " + student.getStudentId());
             return R.ok().message("更新成功！！");
         }
         else
@@ -135,14 +133,29 @@ public class StudentController
         }
     }
     
-    @GetMapping("info/{id}")
+    @GetMapping("info")
     @ApiOperation(value = "根据id查询")
     public R queryById(
         @ApiParam(name = "id", value = "学生学号", required = true)
-        @PathVariable String id)
+        @RequestParam("id") String id)
     {
         Map<String, Object> data = service.info(id);
         return R.ok().data(data);
+    }
+    
+    @GetMapping("pageSearch")
+    public R pageSearch(
+        @ApiParam(name = "currentPage", value = "当前页", required = true)
+        @RequestParam("currentPage") Integer currentPage,
+        @ApiParam(name = "limit", value = "当前页显示记录数", required = true)
+        @RequestParam("limit") Integer limit)
+    {
+        Page<UStudent> page = new Page<>(currentPage, limit);
+        service.page(page);
+        long total = page.getTotal();
+        List<UStudent> records = page.getRecords();
+        
+        return R.ok().data("total", total).data("rows", records);
     }
 }
 

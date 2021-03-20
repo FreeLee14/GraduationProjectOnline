@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
@@ -53,12 +54,12 @@ public class ClassController
     private UTeacherService teacherService;
     
     @ApiOperation(value = "分页查询所有课程", notes = "学生权限调用该接口")
-    @GetMapping("pageSearch/{currentPage}/{limit}")
+    @GetMapping("pageSearch")
     public R pageSearch(
         @ApiParam(name = "currentPage", value = "当前页", required = true)
-        @PathVariable Integer currentPage,
+        @RequestParam("currentPage") Integer currentPage,
         @ApiParam(name = "limit", value = "每页记录数", required = true)
-        @PathVariable Integer limit)
+        @RequestParam("limit") Integer limit)
     {
         QueryWrapper<Class> queryWrapper = new QueryWrapper<>();
         // 按照默认的主键进行排序显示
@@ -157,7 +158,7 @@ public class ClassController
     public R saveClass(
         @ApiParam(name = "nowId", value = "当前用户id（用于判断权限）", required = true)
         @PathVariable String nowId,
-        @RequestBody Class classInfo)
+        Class classInfo)
     {
         
         User user = userService.queryById(nowId);
@@ -271,5 +272,48 @@ public class ClassController
     
     // 退课 （根据日期判断当前课程可以退）
     
+    
+    @GetMapping("info")
+    public  R info(
+        @ApiParam(name = "id", value = "当前课程编号", required = true)
+        @RequestParam("id") String id
+    )
+    {
+        String teacherName = "";
+        Class classInfo = classService.queryByClassId(id);
+        String teacherId = classInfo.getTeacherId();
+        // 如果当前课程已经分配教师，则查询教师名字
+        if (teacherId != null)
+        {
+            Map<String, Object> info = teacherService.info(teacherId);
+            // 获取到教师姓名
+            teacherName = (String)info.get("name");
+        }
+        
+        
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("classId", classInfo.getClassId());
+        data.put("name", classInfo.getName());
+        data.put("description", classInfo.getDescription());
+        data.put("price", classInfo.getPrice());
+        data.put("quota", classInfo.getQuota());
+        data.put("teacherName", teacherName);
+        // 将课程状态码映射为对应的文字描述
+        switch (classInfo.getStatus())
+        {
+            case 1:
+                data.put("status", "未开课");
+                break;
+            case 2:
+                data.put("status", "已开课");
+                break;
+            case 3:
+                data.put("status", "已结课");
+                break;
+            default:
+                break;
+        }
+        return R.ok().data(data);
+    }
 }
 

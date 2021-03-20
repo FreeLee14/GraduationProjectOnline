@@ -2,12 +2,14 @@ package cn.com.tjise.onlineedu.service.impl;
 
 import cn.com.tjise.onlineedu.entity.dto.R;
 import cn.com.tjise.onlineedu.entity.po.UTeacher;
+import cn.com.tjise.onlineedu.entity.po.User;
 import cn.com.tjise.onlineedu.entity.vo.user.UserLoginVO;
 import cn.com.tjise.onlineedu.mapper.UTeacherMapper;
 import cn.com.tjise.onlineedu.service.UTeacherService;
 import cn.com.tjise.onlineedu.util.TokenUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -26,6 +28,9 @@ public class UTeacherServiceImpl
     extends ServiceImpl<UTeacherMapper, UTeacher>
     implements UTeacherService
 {
+    
+    @Autowired
+    private UserServiceImpl userService;
     
     @Override
     public R login(UserLoginVO loginVO)
@@ -57,6 +62,9 @@ public class UTeacherServiceImpl
     @Override
     public Map<String, Object> info(String id)
     {
+        // 获取倒权限id
+        User user = userService.queryById(id);
+        Integer roleId = user.getRoleId();
         /**
          * 查询当前教师信息
          */
@@ -67,12 +75,14 @@ public class UTeacherServiceImpl
          * 组装响应体 data
          */
         Map<String, Object> data = new HashMap<>();
+        data.put("id", id);
         data.put("name", teacher.getName());
         data.put("age", teacher.getAge());
         data.put("email", teacher.getEmail());
         data.put("level", teacher.getLevel());
         data.put("description", teacher.getDescription());
         data.put("avatar", teacher.getAvatar());
+        data.put("roleId", roleId);
         return data;
     }
     
