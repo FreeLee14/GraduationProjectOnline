@@ -1,5 +1,6 @@
 package cn.com.tjise.onlineedu.entity.po;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -53,6 +54,7 @@ public class Order implements Serializable {
     
     @ApiModelProperty(value = "逻辑删除 1（true）1已删除，0（false）未删除")
     @TableLogic
+    @TableField(fill = FieldFill.INSERT)
     private Integer deleted;
 
 }

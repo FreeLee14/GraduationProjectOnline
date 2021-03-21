@@ -18,11 +18,15 @@ public class AutoInsertHandler implements MetaObjectHandler
     @Override
     public void insertFill(MetaObject metaObject)
     {
-        // mybatisplus 插入拦截，首先判断当前实体是否存在 createTime 以及 updateTime 字段
-        if (metaObject.hasSetter(GlobalConstant.CREATE_TIME) && metaObject.hasSetter(GlobalConstant.UPDATE_TIME))
+        // mybatisplus 插入拦截，首先判断当前实体是否存在 createTime 以及 updateTime 字段 以及deleted逻辑删除字段
+        if (metaObject.hasSetter(GlobalConstant.CREATE_TIME)
+            && metaObject.hasSetter(GlobalConstant.UPDATE_TIME)
+            && metaObject.hasSetter(GlobalConstant.DELETED))
         {
             this.strictInsertFill(metaObject, GlobalConstant.CREATE_TIME, LocalDateTime.class, LocalDateTime.now());
             this.strictInsertFill(metaObject, GlobalConstant.UPDATE_TIME, LocalDateTime.class, LocalDateTime.now());
+            // 插入数据时设定逻辑删除字段为0
+            this.strictInsertFill(metaObject, GlobalConstant.DELETED, Integer.class, 0);
         }
     }
     

@@ -55,7 +55,7 @@ public class OrderController
     
     @PostMapping("save")
     @ApiOperation(value = "保存订单", notes = "此时订单处于未支付状态")
-    public R saveOrder(@RequestBody Order order)
+    public R saveOrder(Order order)
     {
         boolean flag = false;
         /*

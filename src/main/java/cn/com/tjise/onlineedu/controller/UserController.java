@@ -9,6 +9,7 @@ import cn.com.tjise.onlineedu.service.UAdminService;
 import cn.com.tjise.onlineedu.service.UStudentService;
 import cn.com.tjise.onlineedu.service.UTeacherService;
 import cn.com.tjise.onlineedu.service.UserService;
+import cn.com.tjise.onlineedu.util.TokenUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -79,6 +80,26 @@ public class UserController
                  * 非以上三种权限为游客
                  */
                 return R.ok().message("当前用户为游客");
+        }
+    }
+    
+    /**
+     * 登录方法
+     *
+     * @return
+     */
+    @GetMapping("logout")
+    @ApiOperation(value = "登出")
+    public R logout(@RequestParam("token") String token)
+    {
+        boolean b = TokenUtil.validToken(token);
+        if (b)
+        {
+            return R.ok().message("登出成功");
+        }
+        else
+        {
+            return R.error().message("登出失败");
         }
     }
     

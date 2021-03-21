@@ -51,7 +51,7 @@ public class ClassServiceImpl
         String classId = classInfo.getClassId();
         UpdateWrapper<Class> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("class_id", classId);
-        return update(updateWrapper);
+        return update(classInfo, updateWrapper);
     }
     
     @Override
@@ -89,13 +89,19 @@ public class ClassServiceImpl
         Optional.ofNullable(classQueryVO.getBeginTime()).ifPresent(
             beginTime -> {
                 // 大于等于开始时间
-                queryWrapper.ge("createTime", beginTime);
+                if (beginTime.length() != 0)
+                {
+                    queryWrapper.ge("create_time", beginTime);
+                }
             }
         );
         Optional.ofNullable(classQueryVO.getEndTime()).ifPresent(
             endTime -> {
                 // 小于等于结束时间
-                queryWrapper.le("createTime", endTime);
+                if (endTime.length() != 0)
+                {
+                    queryWrapper.le("create_time", endTime);
+                }
             }
         );
         page(page, queryWrapper);

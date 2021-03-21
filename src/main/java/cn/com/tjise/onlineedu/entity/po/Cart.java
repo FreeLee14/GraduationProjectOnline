@@ -49,6 +49,7 @@ public class Cart implements Serializable
     
     @ApiModelProperty(value = "逻辑删除 1（true）1已删除，0（false）未删除")
     @TableLogic
+    @TableField(fill = FieldFill.INSERT)
     private Integer deleted;
     
 }

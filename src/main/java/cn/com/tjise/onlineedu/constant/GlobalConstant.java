@@ -11,5 +11,6 @@ public class GlobalConstant
      */
     public static String CREATE_TIME = "createTime";
     public static String UPDATE_TIME = "updateTime";
+    public static String DELETED = "deleted";
     
 }

@@ -21,8 +21,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -80,14 +78,14 @@ public class ClassController
     }
     
     @ApiOperation(value = "根据教师id分页查询所有课程", notes = "教师权限查看自己课程的接口")
-    @GetMapping("pageSearchByTeacher/{nowId}/{currentPage}/{limit}")
+    @GetMapping("pageSearchByTeacher")
     public R pageSearchByTeacher(
         @ApiParam(name = "nowId", value = "教师id", required = true)
-        @PathVariable String nowId,
+        @RequestParam("nowId") String nowId,
         @ApiParam(name = "currentPage", value = "当前页", required = true)
-        @PathVariable Integer currentPage,
+        @RequestParam("currentPage") Integer currentPage,
         @ApiParam(name = "limit", value = "每页记录数", required = true)
-        @PathVariable Integer limit)
+        @RequestParam("limit") Integer limit)
     {
         /*
             验证是否是教师
@@ -122,14 +120,14 @@ public class ClassController
     }
     
     @ApiOperation(value = "根据条件分页显示课程", notes = "按条件筛选课程的接口")
-    @GetMapping("pageSearchByCondition/{currentPage}/{limit}")
+    @PostMapping("pageSearchByCondition/{currentPage}/{limit}")
     public R pageSearchByCondition(
         @ApiParam(name = "currentPage", value = "当前页", required = true)
         @PathVariable Integer currentPage,
         @ApiParam(name = "limit", value = "每页记录数", required = true)
         @PathVariable Integer limit,
         @ApiParam(name = "classQueryVO", value = "条件查询对象", required = false) // 条件实体非必填项
-        @RequestBody ClassQueryVO classQueryVO
+        ClassQueryVO classQueryVO
     )
     {
         // 封装page对象
@@ -186,13 +184,13 @@ public class ClassController
         }
     }
     
-    @DeleteMapping("delete/{nowId}/{deleteId}")
+    @DeleteMapping("delete")
     @ApiOperation(value = "删除课程接口")
     public R delete(
         @ApiParam(name = "nowId", value = "当前登录用户号", required = true)
-        @PathVariable String nowId,
+        @RequestParam("nowId") String nowId,
         @ApiParam(name = "deleteId", value = "要删除的目标课程编号", required = true)
-        @PathVariable String deleteId)
+        @RequestParam("deleteId") String deleteId)
     {
         // 更具当前id查询当前用户角色
         User user = userService.queryById(nowId);
@@ -219,8 +217,8 @@ public class ClassController
         }
     }
     
-    @PutMapping("update")
-    public R update(@RequestBody Class classInfo)
+    @PostMapping("update")
+    public R update(Class classInfo)
     {
         boolean flag = classService.updateByClassId(classInfo);
         if (flag)
@@ -297,22 +295,9 @@ public class ClassController
         data.put("description", classInfo.getDescription());
         data.put("price", classInfo.getPrice());
         data.put("quota", classInfo.getQuota());
+        data.put("teacherId", teacherId);
         data.put("teacherName", teacherName);
-        // 将课程状态码映射为对应的文字描述
-        switch (classInfo.getStatus())
-        {
-            case 1:
-                data.put("status", "未开课");
-                break;
-            case 2:
-                data.put("status", "已开课");
-                break;
-            case 3:
-                data.put("status", "已结课");
-                break;
-            default:
-                break;
-        }
+        data.put("status", classInfo.getStatus());
         return R.ok().data(data);
     }
 }
