@@ -25,8 +25,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +68,7 @@ public class OrderController
         {
             return R.error().message("当前课程已没有剩余名额");
         }
-    
+        
         if (order != null)
         {
             flag = orderService.save(order);
@@ -144,15 +146,15 @@ public class OrderController
         }
     }
     
-    @GetMapping("pageSearch/{nowId}/{currentPage}/{limit}")
+    @GetMapping("pageSearch")
     @ApiOperation(value = "依据当前的学生id进行分页查询")
     public R pageSearch(
         @ApiParam(name = "nowId", value = "当前学生id", required = true)
-        @PathVariable String nowId,
+        @RequestParam("nowId") String nowId,
         @ApiParam(name = "currentPage", value = "当前页码", required = true)
-        @PathVariable Integer currentPage,
+        @RequestParam("currentPage") Integer currentPage,
         @ApiParam(name = "limit", value = "当前页数记录数", required = true)
-        @PathVariable Integer limit
+        @RequestParam("limit") Integer limit
     )
     {
         /*
@@ -162,12 +164,15 @@ public class OrderController
         if (RoleEnum.STUDENT.ordinal() + 1 == user.getRoleId())
         {
             Page<Order> page = new Page<>(currentPage, limit);
-            orderService.page(page);
+            QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
+            // 查询当前学生id的订单信息
+            queryWrapper.eq("student_id", nowId);
+            orderService.page(page, queryWrapper);
             // 获取总记录数
             long total = page.getTotal();
             // 获取所有记录
             List<Order> records = page.getRecords();
-    
+            
             Map<String, Object> data = new HashMap<>();
             data.put("total", total);
             data.put("rows", records);
@@ -179,6 +184,30 @@ public class OrderController
             return R.error().message("当前用户没有权限查询订单");
         }
         
+    }
+    
+    @GetMapping("info")
+    @ApiOperation(value = "根据订单编号获取订单具体信息")
+    public R info(
+        @ApiParam(name = "id", value = "订单编号", required = true)
+        @RequestParam("id") String id
+    )
+    {
+        QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("order_id", id);
+        Order order = orderService.getOne(queryWrapper);
+        Class classInfo;
+        assert order.getClassId() != null;
+        classInfo = classService.queryByClassId(order.getClassId());
+        
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("orderId", order.getOrderId());
+        data.put("className", classInfo.getName());
+        data.put("createTime", order.getCreatetime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        data.put("updateTime", order.getUpdatetime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        data.put("status", order.getStatus());
+        data.put("price", classInfo.getPrice());
+        return R.ok().data(data);
     }
 }
 

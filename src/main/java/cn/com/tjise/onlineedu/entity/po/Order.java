@@ -11,7 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -43,11 +43,11 @@ public class Order implements Serializable {
 
     @ApiModelProperty(value = "订单创建时间")
     @TableField("createTime")
-    private Date createtime;
+    private LocalDateTime createtime;
 
     @ApiModelProperty(value = "订单更新时间")
     @TableField("updateTime")
-    private Date updatetime;
+    private LocalDateTime updatetime;
 
     @ApiModelProperty(value = "订单状态(0 未支付; 1 已支付; 2 废弃订单)")
     private Integer status;
