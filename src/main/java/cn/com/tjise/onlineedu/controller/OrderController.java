@@ -5,10 +5,10 @@ import cn.com.tjise.onlineedu.constant.OrderEnum;
 import cn.com.tjise.onlineedu.constant.RoleEnum;
 import cn.com.tjise.onlineedu.entity.dto.R;
 import cn.com.tjise.onlineedu.entity.po.Class;
-import cn.com.tjise.onlineedu.entity.po.Order;
+import cn.com.tjise.onlineedu.entity.po.OrderInfo;
 import cn.com.tjise.onlineedu.entity.po.User;
 import cn.com.tjise.onlineedu.service.ClassService;
-import cn.com.tjise.onlineedu.service.OrderService;
+import cn.com.tjise.onlineedu.service.OrderInfoService;
 import cn.com.tjise.onlineedu.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -46,7 +46,7 @@ public class OrderController
 {
     
     @Autowired
-    private OrderService orderService;
+    private OrderInfoService orderService;
     @Autowired
     private UserService userService;
     @Autowired
@@ -54,7 +54,7 @@ public class OrderController
     
     @PostMapping("save")
     @ApiOperation(value = "保存订单", notes = "此时订单处于未支付状态")
-    public R saveOrder(Order order)
+    public R saveOrder(OrderInfo order)
     {
         boolean flag = false;
         /*
@@ -82,9 +82,9 @@ public class OrderController
     
     @ApiOperation(value = "修改订单状态", notes = "可修改订单状态为完成支付，废弃订单")
     @PostMapping("update")
-    public R updateOrder(Order order)
+    public R updateOrder(OrderInfo order)
     {
-        UpdateWrapper<Order> updateWrapper = new UpdateWrapper<>();
+        UpdateWrapper<OrderInfo> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("order_id", order.getOrderId());
         // 使用wrapper设定更新status字段，更新时间由拦截器进行添加
         updateWrapper.set("status", order.getStatus());
@@ -126,7 +126,7 @@ public class OrderController
     @DeleteMapping("delete")
     public R deleteByOrderId(@RequestParam("orderId") String orderId)
     {
-        QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("order_id", orderId);
         
         boolean remove = orderService.remove(queryWrapper);
@@ -157,15 +157,15 @@ public class OrderController
         User user = userService.queryById(nowId);
         if (RoleEnum.STUDENT.ordinal() + 1 == user.getRoleId())
         {
-            Page<Order> page = new Page<>(currentPage, limit);
-            QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
+            Page<OrderInfo> page = new Page<>(currentPage, limit);
+            QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
             // 查询当前学生id的订单信息
             queryWrapper.eq("student_id", nowId);
             orderService.page(page, queryWrapper);
             // 获取总记录数
             long total = page.getTotal();
             // 获取所有记录
-            List<Order> records = page.getRecords();
+            List<OrderInfo> records = page.getRecords();
             
             Map<String, Object> data = new HashMap<>();
             data.put("total", total);
@@ -187,9 +187,9 @@ public class OrderController
         @RequestParam("id") String id
     )
     {
-        QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("order_id", id);
-        Order order = orderService.getOne(queryWrapper);
+        OrderInfo order = orderService.getOne(queryWrapper);
         Class classInfo;
         assert order.getClassId() != null;
         classInfo = classService.queryByClassId(order.getClassId());

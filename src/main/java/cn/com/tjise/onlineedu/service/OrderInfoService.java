@@ -1,6 +1,6 @@
 package cn.com.tjise.onlineedu.service;
 
-import cn.com.tjise.onlineedu.entity.po.Order;
+import cn.com.tjise.onlineedu.entity.po.OrderInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author admin
  * @since 2021-03-11
  */
-public interface OrderService extends IService<Order> {
+public interface OrderInfoService extends IService<OrderInfo> {
 
 }

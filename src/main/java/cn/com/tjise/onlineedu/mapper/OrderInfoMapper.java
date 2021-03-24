@@ -1,6 +1,6 @@
 package cn.com.tjise.onlineedu.mapper;
 
-import cn.com.tjise.onlineedu.entity.po.Order;
+import cn.com.tjise.onlineedu.entity.po.OrderInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
@@ -15,6 +15,6 @@ import org.springframework.stereotype.Repository;
  */
 @Mapper
 @Repository
-public interface OrderMapper extends BaseMapper<Order> {
+public interface OrderInfoMapper extends BaseMapper<OrderInfo> {
 
 }
