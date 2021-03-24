@@ -20,10 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -68,12 +65,9 @@ public class OrderController
         {
             return R.error().message("当前课程已没有剩余名额");
         }
-        
-        if (order != null)
-        {
-            flag = orderService.save(order);
-        }
-        
+    
+        flag = orderService.save(order);
+    
         if (flag)
         {
             log.info("success save the info of order!!");
@@ -87,8 +81,8 @@ public class OrderController
     }
     
     @ApiOperation(value = "修改订单状态", notes = "可修改订单状态为完成支付，废弃订单")
-    @PutMapping("update")
-    public R updateOrder(@RequestBody Order order)
+    @PostMapping("update")
+    public R updateOrder(Order order)
     {
         UpdateWrapper<Order> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("order_id", order.getOrderId());
@@ -129,8 +123,8 @@ public class OrderController
     }
     
     @ApiOperation(value = "删除订单")
-    @DeleteMapping("delete/{orderId}")
-    public R deleteByOrderId(@PathVariable String orderId)
+    @DeleteMapping("delete")
+    public R deleteByOrderId(@RequestParam("orderId") String orderId)
     {
         QueryWrapper<Order> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("order_id", orderId);
@@ -203,8 +197,8 @@ public class OrderController
         HashMap<String, Object> data = new HashMap<>();
         data.put("orderId", order.getOrderId());
         data.put("className", classInfo.getName());
-        data.put("createTime", order.getCreatetime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        data.put("updateTime", order.getUpdatetime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        data.put("createTime", order.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        data.put("updateTime", order.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         data.put("status", order.getStatus());
         data.put("price", classInfo.getPrice());
         return R.ok().data(data);

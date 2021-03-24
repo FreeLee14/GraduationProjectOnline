@@ -44,6 +44,7 @@ public class UTeacherServiceImpl
             // 生成token
             String token = TokenUtil.buildToken(loginVO.getUserId());
             HashMap<String, Object> data = new HashMap<>();
+            data.put("userId", teacher.getTeacherId());
             data.put("name", teacher.getName());
             data.put("age", teacher.getAge());
             data.put("email", teacher.getEmail());

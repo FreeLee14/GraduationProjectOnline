@@ -68,6 +68,7 @@ public class UStudentServiceImpl
         UStudent student = getOne(wrapper);
         Map<String, Object> data = new HashMap<>();
         data.put("id", id);
+        data.put("userId", id);
         data.put("roleId", roleId);
         data.put("name", student.getName());
         data.put("age", student.getAge());

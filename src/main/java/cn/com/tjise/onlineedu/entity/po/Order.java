@@ -40,21 +40,23 @@ public class Order implements Serializable {
 
     @ApiModelProperty(value = "课程id")
     private String classId;
-
-    @ApiModelProperty(value = "订单创建时间")
-    @TableField("createTime")
-    private LocalDateTime createtime;
-
-    @ApiModelProperty(value = "订单更新时间")
-    @TableField("updateTime")
-    private LocalDateTime updatetime;
-
-    @ApiModelProperty(value = "订单状态(0 未支付; 1 已支付; 2 废弃订单)")
-    private Integer status;
     
     @ApiModelProperty(value = "逻辑删除 1（true）1已删除，0（false）未删除")
     @TableLogic
     @TableField(fill = FieldFill.INSERT)
     private Integer deleted;
+    
+    @ApiModelProperty(value = "订单创建时间")
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+
+    @ApiModelProperty(value = "订单更新时间")
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
+
+    @ApiModelProperty(value = "订单状态(0 未支付; 1 已支付; 2 废弃订单)")
+    private Integer status;
+    
+    
 
 }
