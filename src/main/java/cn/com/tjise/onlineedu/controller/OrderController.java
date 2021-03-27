@@ -65,9 +65,9 @@ public class OrderController
         {
             return R.error().message("当前课程已没有剩余名额");
         }
-    
+        
         flag = orderService.save(order);
-    
+        
         if (flag)
         {
             log.info("success save the info of order!!");
@@ -86,6 +86,7 @@ public class OrderController
     {
         UpdateWrapper<OrderInfo> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("order_id", order.getOrderId());
+        updateWrapper.eq("student_id", order.getStudentId());
         // 使用wrapper设定更新status字段，更新时间由拦截器进行添加
         updateWrapper.set("status", order.getStatus());
         boolean update = orderService.update(updateWrapper);
@@ -124,19 +125,29 @@ public class OrderController
     
     @ApiOperation(value = "删除订单")
     @DeleteMapping("delete")
-    public R deleteByOrderId(@RequestParam("orderId") String orderId)
+    public R deleteByOrderId(
+        @RequestParam("orderId") String orderId,
+        @RequestParam("nowId") String nowId
+    )
     {
-        QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("order_id", orderId);
-        
-        boolean remove = orderService.remove(queryWrapper);
-        if (remove)
+        if (isStudent(nowId))
         {
-            return R.ok().message("订单删除成功！！");
+            QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("order_id", orderId);
+            queryWrapper.eq("student_id", nowId);
+            boolean remove = orderService.remove(queryWrapper);
+            if (remove)
+            {
+                return R.ok().message("订单删除成功！！");
+            }
+            else
+            {
+                return R.error().message("订单删除失败！！");
+            }
         }
         else
         {
-            return R.error().message("订单删除失败！！");
+            return R.error().message("当前用户没有权限执行此操作！！");
         }
     }
     
@@ -154,8 +165,7 @@ public class OrderController
         /*
             判断当前id是否为学生，后端进行权限校验
          */
-        User user = userService.queryById(nowId);
-        if (RoleEnum.STUDENT.ordinal() + 1 == user.getRoleId())
+        if (isStudent(nowId))
         {
             Page<OrderInfo> page = new Page<>(currentPage, limit);
             QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
@@ -184,24 +194,54 @@ public class OrderController
     @ApiOperation(value = "根据订单编号获取订单具体信息")
     public R info(
         @ApiParam(name = "id", value = "订单编号", required = true)
-        @RequestParam("id") String id
+        @RequestParam("id") String id,
+        @ApiParam(name = "nowId", value = "当前学生id", required = true)
+        @RequestParam("nowId") String nowId
     )
     {
-        QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("order_id", id);
-        OrderInfo order = orderService.getOne(queryWrapper);
-        Class classInfo;
-        assert order.getClassId() != null;
-        classInfo = classService.queryByClassId(order.getClassId());
+        if (isStudent(nowId))
+        {
+            QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("order_id", id);
+            queryWrapper.eq("student_id", nowId);
+            OrderInfo order = orderService.getOne(queryWrapper);
+            Class classInfo;
+            assert order.getClassId() != null;
+            classInfo = classService.queryByClassId(order.getClassId());
+    
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("orderId", order.getOrderId());
+            data.put("className", classInfo.getName());
+            data.put("createTime", order.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            data.put("updateTime", order.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            data.put("status", order.getStatus());
+            data.put("price", classInfo.getPrice());
+            return R.ok().data(data);
+        }
+        else
+        {
+            return R.error().message("您当前没有权限查询当前订单信息");
+        }
+    }
+    
+    /**
+     * 验证是否为学生权限的方法抽取
+     *
+     * @param nowId
+     * @return
+     */
+    private boolean isStudent(String nowId)
+    {
+        boolean flag = false;
+        // 根据当前用户号查询用户
+        User user = userService.queryById(nowId);
+        // 判断用户权限
+        if (RoleEnum.STUDENT.ordinal() + 1 == user.getRoleId())
+        {
+            flag = true;
+        }
         
-        HashMap<String, Object> data = new HashMap<>();
-        data.put("orderId", order.getOrderId());
-        data.put("className", classInfo.getName());
-        data.put("createTime", order.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        data.put("updateTime", order.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        data.put("status", order.getStatus());
-        data.put("price", classInfo.getPrice());
-        return R.ok().data(data);
+        return flag;
     }
 }
 
