@@ -48,9 +48,11 @@ public class WebAppConfig extends WebMvcConfigurationSupport
         List<String> list = new ArrayList<>();
         list.add("/");
         list.add("/onlineedu");
-        list.add("/onlineedu/user");
+        list.add("/onlineedu/user/login");
+        list.add("/onlineedu/user/info");
+        list.add("/onlineedu/upload/userAvatar");
         list.add("/index");
-        list.add("/static/**");
+        list.add("/user/*/**");
         list.add("/static/user/css/*.css");
         list.add("/static/user/js/*.js");
         list.add("/static/user/images/*");

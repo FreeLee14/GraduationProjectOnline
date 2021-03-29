@@ -33,8 +33,13 @@ public class TokenHandler implements HandlerInterceptor
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception
     {
-        /*// 从请求头中获取token值
-        String token = request.getHeader("token");
+        System.out.println(request.getMethod());
+        if ("OPTIONS".equals(request.getMethod()))
+        {
+            return true;
+        }
+        // 从请求头中获取token值
+        String token = request.getHeader("X-Token");
         // 验证token
         if (!TokenUtil.validToken(token))
         {
@@ -45,7 +50,7 @@ public class TokenHandler implements HandlerInterceptor
             response.getWriter().print("{\"msg\":\"token is expired!!\"}");
             LOGGER.info("token is expired !!");
             return false;
-        }*/
+        }
         return true;
     }
 }
