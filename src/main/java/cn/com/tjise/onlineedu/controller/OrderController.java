@@ -29,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * <p>
@@ -86,10 +87,16 @@ public class OrderController
     {
         UpdateWrapper<OrderInfo> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("order_id", order.getOrderId());
-        updateWrapper.eq("student_id", order.getStudentId());
+        Optional.ofNullable(order.getStudentId()).ifPresent(
+            studentId -> {
+                updateWrapper.eq("student_id", studentId);
+            }
+        );
         // 使用wrapper设定更新status字段以及订单反馈feedBack字段，更新时间由拦截器进行添加
         updateWrapper.set("status", order.getStatus());
-        updateWrapper.set("feedBack", order.getFeedBack());
+        Optional.ofNullable(order.getFeedBack()).ifPresent(
+            feedBack -> updateWrapper.set("feed_back", order.getFeedBack())
+        );
         boolean update = orderService.update(updateWrapper);
         
         if (update)
@@ -122,6 +129,63 @@ public class OrderController
             }
         }
         return R.error();
+    }
+    
+    @PostMapping("applyReturnOrder")
+    public R applyReturnOrder(OrderInfo order)
+    {
+        UpdateWrapper<OrderInfo> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("order_id", order.getOrderId());
+        Optional.ofNullable(order.getStudentId()).ifPresent(
+            studentId -> {
+                updateWrapper.eq("student_id", studentId);
+            }
+        );
+        // 使用wrapper设定更新status字段以及订单反馈feedBack字段，更新时间由拦截器进行添加
+        updateWrapper.set("status", order.getStatus());
+        Optional.ofNullable(order.getFeedBack()).ifPresent(
+            feedBack -> updateWrapper.set("feed_back", order.getFeedBack())
+        );
+        boolean update = orderService.update(updateWrapper);
+        if (update)
+        {
+            return R.ok().message("申请成功");
+        }
+        else 
+        {
+            return R.error().message("申请失败");
+        }
+    }
+    
+    @ApiOperation(value = "修改订单状态", notes = "可修改订单状态为完成支付，废弃订单")
+    @PostMapping("updateFeedback")
+    public R updateFeedback(OrderInfo order)
+    {
+        UpdateWrapper<OrderInfo> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("order_id", order.getOrderId());
+        Optional.ofNullable(order.getStudentId()).ifPresent(
+            studentId -> {
+                updateWrapper.eq("student_id", studentId);
+            }
+        );
+        // 使用wrapper设定更新status字段以及订单反馈feedBack字段，更新时间由拦截器进行添加
+        updateWrapper.set("feed_back", order.getFeedBack());
+        // 如果同意退订申请，此时需要再更新订单状态为已废弃
+        if (order.getFeedBack() == 2)
+        {
+            updateWrapper.set("status", 2);
+        }
+        boolean update = orderService.update(updateWrapper);
+        
+        if (update)
+        {
+            return R.ok().message("更新成功");
+        }
+        else
+        {
+            return R.error().message("更新失败");
+        }
+        
     }
     
     @ApiOperation(value = "删除订单")
@@ -163,13 +227,13 @@ public class OrderController
         @RequestParam("limit") Integer limit
     )
     {
+        Page<OrderInfo> page = new Page<>(currentPage, limit);
+        QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
         /*
             判断当前id是否为学生，后端进行权限校验
          */
         if (isStudent(nowId))
         {
-            Page<OrderInfo> page = new Page<>(currentPage, limit);
-            QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
             // 查询当前学生id的订单信息
             queryWrapper.eq("student_id", nowId);
             orderService.page(page, queryWrapper);
@@ -177,32 +241,32 @@ public class OrderController
             long total = page.getTotal();
             // 获取所有记录
             List<OrderInfo> records = page.getRecords();
-            
             Map<String, Object> data = new HashMap<>();
             data.put("total", total);
             data.put("rows", records);
-            
             return R.ok().data(data);
         }
         // 管理员权限可以查看所有的订单
         else if (isAdmin(nowId))
         {
-            Page<OrderInfo> page = new Page<>(currentPage, limit);
+            orderService.page(page);
             // 获取总记录数
             long total = page.getTotal();
             // 获取所有记录
             List<OrderInfo> records = page.getRecords();
-    
+            Long collect = records.stream().filter(
+                orderInfo -> orderInfo.getFeedBack() == 1
+            ).count();
+            
             Map<String, Object> data = new HashMap<>();
             data.put("total", total);
             data.put("rows", records);
-    
+            data.put("feedBackNumber", collect);
             return R.ok().data(data);
         }
         
         return R.error().message("当前用户没有权限查询订单");
     }
-    
     
     
     @GetMapping("info")
@@ -214,31 +278,63 @@ public class OrderController
         @RequestParam("nowId") String nowId
     )
     {
+        QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
+        // 如果是学生，就按照订单号以及学生账号进行确认具体订单信息
         if (isStudent(nowId))
         {
-            QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("order_id", id);
             queryWrapper.eq("student_id", nowId);
-            OrderInfo order = orderService.getOne(queryWrapper);
-            Class classInfo;
-            assert order.getClassId() != null;
-            classInfo = classService.queryByClassId(order.getClassId());
-    
-            HashMap<String, Object> data = new HashMap<>();
-            data.put("orderId", order.getOrderId());
-            data.put("className", classInfo.getName());
-            data.put("createTime", order.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            data.put("updateTime", order.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            data.put("status", order.getStatus());
-            data.put("price", classInfo.getPrice());
-            // 添加订单反馈字段
-            data.put("feedBack", order.getFeedBack());
-            return R.ok().data(data);
+        }
+        // 如果是管理员则只需要根据订单号进行确定唯一订单，但是这里存在缺陷，如果订单号不唯一将出现问题
+        else if (isAdmin(nowId))
+        {
+            queryWrapper.eq("order_id", id);
         }
         else
         {
             return R.error().message("您当前没有权限查询当前订单信息");
         }
+        OrderInfo order = orderService.getOne(queryWrapper);
+        Class classInfo;
+        assert order.getClassId() != null;
+        classInfo = classService.queryByClassId(order.getClassId());
+        
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("orderId", order.getOrderId());
+        data.put("studentId", order.getStudentId());
+        data.put("classId", classInfo.getClassId());
+        data.put("className", classInfo.getName());
+        data.put("createTime", order.getCreateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        data.put("updateTime", order.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        data.put("status", order.getStatus());
+        data.put("price", classInfo.getPrice());
+        // 添加订单反馈字段
+        data.put("feedBack", order.getFeedBack());
+        
+        return R.ok().data(data);
+        
+    }
+    
+    @GetMapping("feedbackNumber")
+    @ApiOperation(value = "查询所有订单反馈处于申请退订状态的订单")
+    public R getFeedBackNumber(
+        @ApiParam(name = "currentPage", value = "当前页码", required = true)
+        @RequestParam("currentPage") Integer currentPage,
+        @ApiParam(name = "limit", value = "当前页数记录数", required = true)
+        @RequestParam("limit") Integer limit
+    )
+    {
+        Page<OrderInfo> page = new Page<>(currentPage, limit);
+        // 分页查询所有feedback == 1 的订单 
+        QueryWrapper<OrderInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("feed_back", 1);
+        orderService.page(page, queryWrapper);
+        long total = page.getTotal();
+        List<OrderInfo> records = page.getRecords();
+        Map<String, Object> data = new HashMap<>();
+        data.put("total", total);
+        data.put("rows", records);
+        return R.ok().data(data);
     }
     
     /**
@@ -261,10 +357,16 @@ public class OrderController
         return flag;
     }
     
+    /**
+     * 验证是否是管理员方法抽离
+     *
+     * @param nowId
+     * @return
+     */
     private boolean isAdmin(String nowId)
     {
         boolean flag = false;
-    
+        
         User user = userService.queryById(nowId);
         
         if (RoleEnum.ADMIN.ordinal() + 1 == user.getRoleId())

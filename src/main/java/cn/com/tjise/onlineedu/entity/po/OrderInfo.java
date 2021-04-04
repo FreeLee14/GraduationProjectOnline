@@ -57,8 +57,8 @@ public class OrderInfo implements Serializable {
     @ApiModelProperty(value = "订单状态(0  未支付; 1 已支付; 2 废弃订单)")
     private Integer status;
     
-    @ApiModelProperty(value = "订单反馈")
-    private String feedBack;
+    @ApiModelProperty(value = "订单反馈 0：无反馈 1：申请退单；2：确认申请; 3：拒绝申请")
+    private Integer feedBack;
     
     
 
