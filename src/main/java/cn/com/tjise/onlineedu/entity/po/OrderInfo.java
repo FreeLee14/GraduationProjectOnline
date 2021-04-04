@@ -54,8 +54,11 @@ public class OrderInfo implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
-    @ApiModelProperty(value = "订单状态(0 未支付; 1 已支付; 2 废弃订单)")
+    @ApiModelProperty(value = "订单状态(0  未支付; 1 已支付; 2 废弃订单)")
     private Integer status;
+    
+    @ApiModelProperty(value = "订单反馈")
+    private String feedBack;
     
     
 

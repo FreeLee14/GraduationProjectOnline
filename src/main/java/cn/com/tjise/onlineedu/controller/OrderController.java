@@ -87,8 +87,9 @@ public class OrderController
         UpdateWrapper<OrderInfo> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("order_id", order.getOrderId());
         updateWrapper.eq("student_id", order.getStudentId());
-        // 使用wrapper设定更新status字段，更新时间由拦截器进行添加
+        // 使用wrapper设定更新status字段以及订单反馈feedBack字段，更新时间由拦截器进行添加
         updateWrapper.set("status", order.getStatus());
+        updateWrapper.set("feedBack", order.getFeedBack());
         boolean update = orderService.update(updateWrapper);
         
         if (update)
@@ -183,12 +184,26 @@ public class OrderController
             
             return R.ok().data(data);
         }
-        else
+        // 管理员权限可以查看所有的订单
+        else if (isAdmin(nowId))
         {
-            return R.error().message("当前用户没有权限查询订单");
+            Page<OrderInfo> page = new Page<>(currentPage, limit);
+            // 获取总记录数
+            long total = page.getTotal();
+            // 获取所有记录
+            List<OrderInfo> records = page.getRecords();
+    
+            Map<String, Object> data = new HashMap<>();
+            data.put("total", total);
+            data.put("rows", records);
+    
+            return R.ok().data(data);
         }
         
+        return R.error().message("当前用户没有权限查询订单");
     }
+    
+    
     
     @GetMapping("info")
     @ApiOperation(value = "根据订单编号获取订单具体信息")
@@ -216,6 +231,8 @@ public class OrderController
             data.put("updateTime", order.getUpdateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             data.put("status", order.getStatus());
             data.put("price", classInfo.getPrice());
+            // 添加订单反馈字段
+            data.put("feedBack", order.getFeedBack());
             return R.ok().data(data);
         }
         else
@@ -237,6 +254,20 @@ public class OrderController
         User user = userService.queryById(nowId);
         // 判断用户权限
         if (RoleEnum.STUDENT.ordinal() + 1 == user.getRoleId())
+        {
+            flag = true;
+        }
+        
+        return flag;
+    }
+    
+    private boolean isAdmin(String nowId)
+    {
+        boolean flag = false;
+    
+        User user = userService.queryById(nowId);
+        
+        if (RoleEnum.ADMIN.ordinal() + 1 == user.getRoleId())
         {
             flag = true;
         }
