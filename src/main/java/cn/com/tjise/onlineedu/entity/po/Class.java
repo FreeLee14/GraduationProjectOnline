@@ -68,4 +68,7 @@ public class Class implements Serializable
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
     
+    @ApiModelProperty(value = "文件相对路径组合,以;进行分割")
+    private String fileName;
+    
 }

@@ -51,6 +51,7 @@ public class WebAppConfig extends WebMvcConfigurationSupport
         list.add("/onlineedu/user/login");
         list.add("/onlineedu/user/info");
         list.add("/onlineedu/upload/userAvatar");
+        list.add("/onlineedu/upload/uploadFiles");
         list.add("/index");
         list.add("/user/*/**");
         list.add("/static/user/css/*.css");

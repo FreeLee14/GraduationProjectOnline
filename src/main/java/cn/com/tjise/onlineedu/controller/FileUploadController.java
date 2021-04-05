@@ -1,8 +1,12 @@
 package cn.com.tjise.onlineedu.controller;
 
 import cn.com.tjise.onlineedu.entity.dto.R;
+import cn.com.tjise.onlineedu.entity.po.Class;
+import cn.com.tjise.onlineedu.service.ClassService;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,17 +29,18 @@ import java.io.IOException;
 @RequestMapping("/onlineedu/upload")
 public class FileUploadController
 {
+    @Autowired
+    private ClassService classService;
+    
     @PostMapping("userAvatar")
     public R uploadUserAvatar(
         @ApiParam(name = "avatar", value = "用户头像流", required = true)
         @RequestParam("avatar") MultipartFile uploadFile
     ) throws FileNotFoundException
     {
-        //获得resources路径
-        String path = System.getProperty("user.dir");
-        path += "\\src\\main\\resources";
+        String avatarPath = FILE_ROOT_PATH + File.separator + "user" + File.separator + "avatar";
         //空文件夹在编译时不会打包进入target中
-        File uploadDir = new File(path + "\\static\\user\\avatar");
+        File uploadDir = new File(avatarPath);
         if (!uploadDir.exists())
         {
             log.info("上传头像路径不存在，正在创建...");
@@ -48,7 +53,7 @@ public class FileUploadController
             log.info("上传的文件名" + oldName);
             //我的文件保存在static目录下的user/avatar
             assert oldName != null;
-            File avatar = new File(path + "/static/user/avatar/", oldName);
+            File avatar = new File(avatarPath + File.separator, oldName);
             if (avatar.exists())
             {
                 return R.ok().data("avatarUrl", "/user/avatar/" + oldName);
@@ -71,4 +76,99 @@ public class FileUploadController
             return R.error().message("上传的文件为空！！");
         }
     }
+    
+    @PostMapping("uploadFiles")
+    public R uploadFiles(@RequestParam("file") MultipartFile[] files) throws IOException
+    {
+        boolean flag = false;
+        
+        for (MultipartFile file : files)
+        {
+            // 获取文件名称
+            String filename = file.getOriginalFilename();
+            assert filename != null;
+            // 将文件持久化至本地
+            String path = saveFileByNio(file, filename);
+            // 如果获取到的结果为null说明文件没有持久化到本地
+            if (path != null)
+            {
+                String[] split = filename.split(FILE_SPLIT);
+                String classIdName = split[0];
+                String fileName = split[1];
+                String fileRes = classIdName + File.separator + fileName;
+                UpdateWrapper<Class> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.set("file_name", fileRes + ";");
+                updateWrapper.eq("class_id", classIdName);
+                boolean update = classService.update(updateWrapper);
+                if (update)
+                {
+                    flag = true;
+                }
+                else
+                {
+                    flag = false;
+                }
+            }
+            else
+            {
+                flag = false;
+            }
+            
+        }
+        if (flag)
+        {
+            
+            return R.ok().message("上传成功");
+        }
+        else
+        {
+            return R.error().message("上传失败");
+        }
+    }
+    
+    /**
+     * 将文件保存至服务端
+     *
+     * @param uploadFile
+     * @param fileName   这里的fileName的格式带有上级文件夹目录内容使用$进行分隔
+     * @return
+     */
+    private static String saveFileByNio(MultipartFile uploadFile, String fileName) throws IOException
+    {
+        // 如果不包含$符号则直接返回null
+        if (!fileName.contains("$"))
+        {
+            return null;
+        }
+        else
+        {
+            String[] split = fileName.split(FILE_SPLIT);
+            // 这个parentName代表课程名称
+            String parentName = split[0];
+            // 真实的文件名字
+            String fileNameStr = split[1];
+            // 这个路径最后是在: src\main\resources\static\classInfo
+            String path = FILE_ROOT_PATH + File.separator + "classInfo" + File.separator + parentName + File.separator + fileNameStr;
+            // 判断父文件夹是否存在
+            File file = new File(path);
+            // 判断当前文件路径是否存在
+            if (!file.getParentFile().exists() && !file.getParentFile().isDirectory())
+            {
+                // 创建当前文件级别路径的上一级目录
+                file.getParentFile().mkdirs();
+            }
+            uploadFile.transferTo(file);
+            
+            return path;
+        }
+    }
+    
+    /**
+     * 文件上级目录和文件名称分隔符
+     */
+    private static final String FILE_SPLIT = "\\$";
+    /**
+     * 所有上传文件存储与服务端的根路径
+     */
+    public static final String FILE_ROOT_PATH = System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "static";
 }
