@@ -164,6 +164,15 @@ public class ClassController
         if (RoleEnum.ADMIN.ordinal() + 1 == user.getRoleId() ||
             RoleEnum.TEACHER.ordinal() + 1 == user.getRoleId())
         {
+            // 首先判断当前数据库中是否已存在该classid的课程信息
+            QueryWrapper<Class> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("class_id", classInfo.getClassId());
+            int count = classService.count(queryWrapper);
+            if (count != 0)
+            {
+                return R.error().message("当前classid已经存在");
+            }
+            
             boolean save = classService.save(classInfo);
             
             if (save)

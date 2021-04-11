@@ -2,6 +2,7 @@ package cn.com.tjise.onlineedu.controller;
 
 import cn.com.tjise.onlineedu.entity.dto.R;
 import cn.com.tjise.onlineedu.entity.po.Class;
+import cn.com.tjise.onlineedu.entity.vo.classinfo.ClassFileVO;
 import cn.com.tjise.onlineedu.service.ClassService;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.swagger.annotations.ApiParam;
@@ -78,43 +79,44 @@ public class FileUploadController
     }
     
     @PostMapping("uploadFiles")
-    public R uploadFiles(@RequestParam("file") MultipartFile[] files) throws IOException
+    public R uploadFiles(ClassFileVO classFileVO) throws IOException
     {
         boolean flag = false;
         
-        for (MultipartFile file : files)
+        if (classFileVO.getFile() == null)
         {
-            // 获取文件名称
-            String filename = file.getOriginalFilename();
-            assert filename != null;
-            // 将文件持久化至本地
-            String path = saveFileByNio(file, filename);
-            // 如果获取到的结果为null说明文件没有持久化到本地
-            if (path != null)
+            return R.error().message("上传失败");
+        }
+        // 获取文件名称
+        String filename = classFileVO.getName();
+        
+        // 将文件持久化至本地
+        String path = saveFileByNio(classFileVO.getFile(), filename);
+        // 如果获取到的结果为null说明文件没有持久化到本地
+        if (path != null)
+        {
+            String[] split = filename.split(FILE_SPLIT);
+            String classIdName = split[0];
+            String fileName = split[1];
+            String fileRes = classIdName + File.separator + fileName;
+            UpdateWrapper<Class> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.set("file_name", fileRes + ";");
+            updateWrapper.eq("class_id", classIdName);
+            boolean update = classService.update(updateWrapper);
+            if (update)
             {
-                String[] split = filename.split(FILE_SPLIT);
-                String classIdName = split[0];
-                String fileName = split[1];
-                String fileRes = classIdName + File.separator + fileName;
-                UpdateWrapper<Class> updateWrapper = new UpdateWrapper<>();
-                updateWrapper.set("file_name", fileRes + ";");
-                updateWrapper.eq("class_id", classIdName);
-                boolean update = classService.update(updateWrapper);
-                if (update)
-                {
-                    flag = true;
-                }
-                else
-                {
-                    flag = false;
-                }
+                flag = true;
             }
             else
             {
                 flag = false;
             }
-            
         }
+        else
+        {
+            flag = false;
+        }
+        
         if (flag)
         {
             
@@ -149,14 +151,14 @@ public class FileUploadController
             String fileNameStr = split[1];
             // 这个路径最后是在: src\main\resources\static\classInfo
             String path = FILE_ROOT_PATH + File.separator + "classInfo" + File.separator + parentName + File.separator + fileNameStr;
-            // 判断父文件夹是否存在
             File file = new File(path);
-            // 判断当前文件路径是否存在
+            // 判断上级路径是否存在，同时判断是否是文件夹
             if (!file.getParentFile().exists() && !file.getParentFile().isDirectory())
             {
                 // 创建当前文件级别路径的上一级目录
                 file.getParentFile().mkdirs();
             }
+            // 将接收到的文件流持久化到服务器的对应文件中
             uploadFile.transferTo(file);
             
             return path;
