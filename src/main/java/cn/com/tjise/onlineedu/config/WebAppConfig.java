@@ -52,6 +52,7 @@ public class WebAppConfig extends WebMvcConfigurationSupport
         list.add("/onlineedu/user/info");
         list.add("/onlineedu/upload/userAvatar");
         list.add("/onlineedu/upload/uploadFiles");
+        list.add("/classInfo/**");
         list.add("/index");
         list.add("/user/*/**");
         list.add("/static/user/css/*.css");
@@ -70,6 +71,7 @@ public class WebAppConfig extends WebMvcConfigurationSupport
         // 解决静态资源无法访问
         registry.addResourceHandler("/**")
             .addResourceLocations("classpath:/static/");
+        
         // 解决swagger无法访问
         registry.addResourceHandler("/swagger-ui.html")
             .addResourceLocations("classpath:/META-INF/resources/");

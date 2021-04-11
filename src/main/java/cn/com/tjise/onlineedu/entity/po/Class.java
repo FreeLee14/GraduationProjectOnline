@@ -55,6 +55,18 @@ public class Class implements Serializable
     @ApiModelProperty(value = "课程状态(1：未开课；2：已开课；3：已结课)")
     private Integer status;
     
+    @ApiModelProperty(value = "课程计划日期（星期几）")
+    private String scheduleDate;
+    
+    @ApiModelProperty(value = "课程计划开始时间（时分）")
+    private String scheduleStart;
+    
+    @ApiModelProperty(value = "课程计划结束时间（时分）")
+    private String scheduleEnd;
+    
+    @ApiModelProperty(value = "课时")
+    private Integer classHour;
+    
     @ApiModelProperty(value = "逻辑删除 1（true）1已删除，0（false）未删除")
     @TableLogic
     @TableField(fill = FieldFill.INSERT)

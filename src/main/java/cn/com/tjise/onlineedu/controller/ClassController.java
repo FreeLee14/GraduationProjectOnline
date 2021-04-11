@@ -127,7 +127,7 @@ public class ClassController
         @ApiParam(name = "limit", value = "每页记录数", required = true)
         @PathVariable Integer limit,
         @ApiParam(name = "classQueryVO", value = "条件查询对象", required = false) // 条件实体非必填项
-        ClassQueryVO classQueryVO
+            ClassQueryVO classQueryVO
     )
     {
         // 封装page对象
@@ -244,6 +244,7 @@ public class ClassController
     
     /**
      * 基于课程id查询当前课程所包含学生
+     *
      * @param classId
      * @return
      */
@@ -260,6 +261,7 @@ public class ClassController
     
     /**
      * 基于课程id查询当前课程所属老师
+     *
      * @param classId
      * @return
      */
@@ -277,11 +279,8 @@ public class ClassController
         
     }
     
-    // 退课 （根据日期判断当前课程可以退）
-    
-    
     @GetMapping("info")
-    public  R info(
+    public R info(
         @ApiParam(name = "id", value = "当前课程编号", required = true)
         @RequestParam("id") String id
     )
@@ -294,9 +293,8 @@ public class ClassController
         {
             Map<String, Object> info = teacherService.info(teacherId);
             // 获取到教师姓名
-            teacherName = (String)info.get("name");
+            teacherName = (String) info.get("name");
         }
-        
         
         HashMap<String, Object> data = new HashMap<>();
         data.put("classId", classInfo.getClassId());
@@ -307,6 +305,11 @@ public class ClassController
         data.put("teacherId", teacherId);
         data.put("teacherName", teacherName);
         data.put("status", classInfo.getStatus());
+        data.put("scheduleDate", classInfo.getScheduleDate());
+        data.put("scheduleStart", classInfo.getScheduleStart());
+        data.put("scheduleEnd", classInfo.getScheduleEnd());
+        data.put("classHour", classInfo.getClassHour());
+        
         return R.ok().data(data);
     }
 }

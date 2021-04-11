@@ -26,10 +26,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -310,7 +313,18 @@ public class OrderController
         data.put("price", classInfo.getPrice());
         // 添加订单反馈字段
         data.put("feedBack", order.getFeedBack());
-        
+        // 获取fileName子路径组合字符串 该字符串格式为 文件子路径；文件子路径
+        String fileName = classInfo.getFileName();
+        List<String> fileList = new ArrayList<>();
+        if (fileName != null && fileName.contains(FILE_SPILT))
+        {
+            String[] fileArray = fileName.trim().split(FILE_SPILT);
+            // 将数组转换为集合，同时筛去长度为0的内容
+            fileList = Arrays.stream(fileArray).filter(
+                file -> file.length() > 0
+            ).collect(Collectors.toList());
+        }
+        data.put("file", fileList);
         return R.ok().data(data);
         
     }
@@ -376,5 +390,10 @@ public class OrderController
         
         return flag;
     }
+    
+    /**
+     * 课程表信息中的文件路径组合字段分隔符
+     */
+    private static final String FILE_SPILT = ";";
 }
 

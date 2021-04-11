@@ -11,7 +11,7 @@ spring:
   #mysql数据库连接配置信息
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/onlineedu?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=UTF-8
+    url: jdbc:mysql://192.168.80.128:3306/onlineedu?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=UTF-8
     username: root
     password: 1484840359
 #MyBatisPlus配置
