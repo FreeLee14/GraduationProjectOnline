@@ -6,6 +6,7 @@ import cn.com.tjise.onlineedu.entity.po.UStudent;
 import cn.com.tjise.onlineedu.entity.po.User;
 import cn.com.tjise.onlineedu.service.UStudentService;
 import cn.com.tjise.onlineedu.service.UserService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiOperation;
@@ -52,6 +53,14 @@ public class StudentController
     @ApiOperation(value = "学生注册接口")
     public R save(UStudent student)
     {
+        // 进行当前账号判重操作
+        QueryWrapper<UStudent> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("student_id", student.getStudentId());
+        int count = service.count(queryWrapper);
+        if (count != 0)
+        {
+            return R.error().message("该学生账号已存在");
+        }
         // 保存学生信息
         boolean save = service.save(student);
         

@@ -2,9 +2,11 @@ package cn.com.tjise.onlineedu.controller;
 
 
 import cn.com.tjise.onlineedu.entity.dto.R;
+import cn.com.tjise.onlineedu.entity.po.Class;
 import cn.com.tjise.onlineedu.entity.po.UTeacher;
 import cn.com.tjise.onlineedu.entity.po.User;
 import cn.com.tjise.onlineedu.mapper.UTeacherMapper;
+import cn.com.tjise.onlineedu.service.ClassService;
 import cn.com.tjise.onlineedu.service.UTeacherService;
 import cn.com.tjise.onlineedu.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -47,6 +49,8 @@ public class TeacherController
     private UserService userService;
     @Autowired
     private UTeacherMapper teacherMapper;
+    @Autowired
+    private ClassService classService;
     
     /**
      * 注册接口
@@ -58,6 +62,14 @@ public class TeacherController
     @ApiOperation(value = "老师注册接口")
     public R save(UTeacher teacher)
     {
+        // 进行当前账号判重操作
+        QueryWrapper<UTeacher> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("teacher_id", teacher.getTeacherId());
+        int count = service.count(queryWrapper);
+        if (count != 0)
+        {
+            return R.error().message("该教师账号已存在");
+        }
         // 保存教师信息
         boolean save = service.save(teacher);
         
@@ -101,6 +113,15 @@ public class TeacherController
         // 当权限为1时代表管理员，有权限删除教师
         if (user.getRoleId() == 1)
         {
+            // 首先判断当前教师是否已经绑定了课程，如果绑定了课程需要先将课程更改教师或删除，才能删除该教师
+            QueryWrapper<Class> classWrapper = new QueryWrapper<>();
+            classWrapper.eq("teacher_id", deleteId);
+            int count = classService.count(classWrapper);
+            if (count != 0)
+            {
+                return R.error().message("当前教师已经绑定课程，无法删除！！");
+            }
+            // 若没有绑定课程再进行删除操作
             QueryWrapper<UTeacher> wrapper = new QueryWrapper<>();
             wrapper.eq("teacher_id", deleteId);
             // 权限通过，根据deleteId删除对应的用户
@@ -127,8 +148,16 @@ public class TeacherController
     @ApiOperation(value = "更新教师信息接口")
     public R update(@RequestBody UTeacher teacher)
     {
+        // 获取到teacher账号
+        String teacherId = teacher.getTeacherId();
+        // 将之前的教师信息查出，因为不能将teacherid作为更改信息匹配的条件，因为教师账号可以改变
+        QueryWrapper<UTeacher> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("teacher_id", teacherId);
+        UTeacher resTeacher = service.getOne(queryWrapper);
+        // 创建更新包装器
         UpdateWrapper<UTeacher> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("teacher_id", teacher.getTeacherId());
+        // 更新匹配字段为主键
+        updateWrapper.eq("id", resTeacher.getId());
         boolean update = service.update(teacher, updateWrapper);
         
         if (update)

@@ -300,6 +300,14 @@ public class OrderController
         OrderInfo order = orderService.getOne(queryWrapper);
         Class classInfo;
         assert order.getClassId() != null;
+        // 首先验证该订单所绑定的课程是否存在
+        QueryWrapper<Class> classWrapper = new QueryWrapper<>();
+        classWrapper.eq("class_id", order.getClassId());
+        int count = classService.count(classWrapper);
+        if (count == 0)
+        {
+            return R.error().message("当前订单课程已失效！！");
+        }
         classInfo = classService.queryByClassId(order.getClassId());
         
         HashMap<String, Object> data = new HashMap<>();
