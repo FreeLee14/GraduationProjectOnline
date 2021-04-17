@@ -3,6 +3,7 @@ package cn.com.tjise.onlineedu.controller;
 import cn.com.tjise.onlineedu.entity.dto.R;
 import cn.com.tjise.onlineedu.entity.po.Class;
 import cn.com.tjise.onlineedu.entity.vo.classinfo.ClassFileVO;
+import cn.com.tjise.onlineedu.entity.vo.user.AvatarFileVO;
 import cn.com.tjise.onlineedu.service.ClassService;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.swagger.annotations.ApiParam;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,11 +35,13 @@ public class FileUploadController
     
     @PostMapping("userAvatar")
     public R uploadUserAvatar(
-        @ApiParam(name = "avatar", value = "用户头像流", required = true)
-        @RequestParam("avatar") MultipartFile uploadFile
+        @ApiParam(name = "avatarFileVO", value = "用户上传头像传输数据实体", required = true)
+            AvatarFileVO avatarFileVO
     ) throws FileNotFoundException
     {
-        String avatarPath = FILE_ROOT_PATH + File.separator + "user" + File.separator + "avatar";
+        MultipartFile uploadFile = avatarFileVO.getFile();
+        String avatarPath = FILE_ROOT_PATH + File.separator + "user" + File.separator + "avatar" + File.separator + avatarFileVO.getUserType()
+            + File.separator;
         //空文件夹在编译时不会打包进入target中
         File uploadDir = new File(avatarPath);
         if (!uploadDir.exists())
@@ -49,22 +51,25 @@ public class FileUploadController
         }
         if (uploadFile != null)
         {
-            //获得上传文件的文件名
+            // 获得上传文件的文件名
             String oldName = uploadFile.getOriginalFilename();
             log.info("上传的文件名" + oldName);
             //我的文件保存在static目录下的user/avatar
             assert oldName != null;
             File avatar = new File(avatarPath + File.separator, oldName);
+            // 组装响应数据库中的路径拼接
+            String resUrl = File.separator + "user" + File.separator + "avatar" + File.separator +
+                avatarFileVO.getUserType() + File.separator + oldName;
             if (avatar.exists())
             {
-                return R.ok().data("avatarUrl", "/user/avatar/" + oldName);
+                return R.ok().data("avatarUrl", resUrl);
             }
             try
             {
                 //保存图片
                 uploadFile.transferTo(avatar);
                 //返回成功结果，附带文件的相对路径
-                return R.ok().data("avatarUrl", "/user/avatar/" + oldName);
+                return R.ok().data("avatarUrl", resUrl);
             }
             catch (IOException e)
             {

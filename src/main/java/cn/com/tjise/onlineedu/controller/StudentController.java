@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -102,8 +103,20 @@ public class StudentController
         // 当权限为1时代表管理源，有权限删除学生
         if (user.getRoleId() == 1)
         {
-            UpdateWrapper<UStudent> wrapper = new UpdateWrapper<>();
+            QueryWrapper<UStudent> wrapper = new QueryWrapper<>();
             wrapper.eq("student_id", deleteId);
+            /*
+               1 删除对应的头像文件
+             */
+            // 1-1首先获取要删除的学生信息
+            UStudent student = service.getOne(wrapper);
+            // 1-2 获取对应的头像相对路径
+            String avatar = student.getAvatar();
+            // 1-3 判断是否存在路径信息
+            if (avatar.length() > 0)
+            {
+                deleteAvatar(avatar);
+            }
             // 权限通过，根据deleteId删除对应的用户
             boolean remove = service.remove(wrapper);
             // 同时删除user表中的权限关联
@@ -122,6 +135,7 @@ public class StudentController
             return R.error().message("您没有权限删除当前用户！！");
         }
     }
+    
     
     @PostMapping("update")
     @ApiOperation(value = "更新学生信息接口")
@@ -165,6 +179,20 @@ public class StudentController
         List<UStudent> records = page.getRecords();
         
         return R.ok().data("total", total).data("rows", records);
+    }
+    
+    /**
+     * 删除头像具体逻辑
+     * @param avatar
+     */
+    private void deleteAvatar(String avatar)
+    {
+        // 组装头像全路径
+        String avatarPath = FileUploadController.FILE_ROOT_PATH + File.separator + "user" + File.separator + "avatar" + avatar;
+        // 构建文件对象
+        File file = new File(avatar);
+        // 如果文件存在进行删除
+        file.deleteOnExit();
     }
 }
 

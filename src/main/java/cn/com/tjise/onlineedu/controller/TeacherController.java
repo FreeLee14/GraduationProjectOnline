@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -124,6 +125,18 @@ public class TeacherController
             // 若没有绑定课程再进行删除操作
             QueryWrapper<UTeacher> wrapper = new QueryWrapper<>();
             wrapper.eq("teacher_id", deleteId);
+            /*
+                删除教师对应的头像
+             */
+            // 先查询出对应的教师全部信息
+            UTeacher teacher = service.getOne(wrapper);
+            // 获取头像所在服务器相对路径
+            String avatar = teacher.getAvatar();
+            // 若当前教师拥有头像，进行头像删除
+            if (avatar.length() > 0)
+            {
+                deleteAvatar(avatar);
+            }
             // 权限通过，根据deleteId删除对应的用户
             boolean remove = service.remove(wrapper);
             // 同时删除user表中的权限关联
@@ -203,5 +216,20 @@ public class TeacherController
         
         return R.ok().data("rows", teachers);
     }
+    
+    /**
+     * 删除头像的具体流程
+     * @param avatar
+     */
+    private void deleteAvatar(String avatar)
+    {
+        // 组装头像全路径
+        String avatarPath = FileUploadController.FILE_ROOT_PATH + File.separator + "user" + File.separator + "avatar" + avatar;
+        // 构建文件对象
+        File file = new File(avatar);
+        // 如果文件存在进行删除
+        file.deleteOnExit();
+    }
+    
 }
 
